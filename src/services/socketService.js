@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 import { BASE_URL } from './api';
 import store from '../store/store';
 import {
-  receiveMessage, updateMessageStatus, setTyping
+  receiveMessage, updateMessageStatus, setTyping, deleteMessageLocally
 } from '../store/slices/chatSlice';
 import {
   setUserOnline, setUserOffline
@@ -59,6 +59,10 @@ export const initSocket = (token) => {
 
   socket.on('message:read_receipt', ({ chatId, readBy }) => {
     store.dispatch(updateMessageStatus({ chatId, readBy, status: 'read' }));
+  });
+
+  socket.on('message:deleted', ({ chatId, messageId }) => {
+    store.dispatch(deleteMessageLocally({ chatId, messageId }));
   });
 
   // ─── TYPING ────────────────────────────────────────────────────────────────
@@ -122,6 +126,9 @@ export const socketSend = {
   },
   typingStop: (receiverId, chatId) => {
     socket?.emit('typing:stop', { receiverId, chatId });
+  },
+  deleteMessage: (chatId, receiverId, messageId) => {
+    socket?.emit('message:delete', { chatId, receiverId, messageId });
   },
   joinGroup: (groupId) => {
     socket?.emit('group:join', groupId);

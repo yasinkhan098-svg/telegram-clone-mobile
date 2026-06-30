@@ -5,7 +5,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import moment from 'moment';
 
-export default function MessageBubble({ message, isMe }) {
+export default function MessageBubble({ message, isMe, onLongPress }) {
   const {
     content, text, mediaUrl, type,
     status, isEdited, isDeletedForEveryone,
@@ -49,7 +49,11 @@ export default function MessageBubble({ message, isMe }) {
 
   return (
     <View style={[styles.row, isMe ? styles.myRow : styles.theirRow]}>
-      <View style={[styles.bubble, isMe ? styles.myBubble : styles.theirBubble]}>
+      <TouchableOpacity
+        style={[styles.bubble, isMe ? styles.myBubble : styles.theirBubble]}
+        activeOpacity={0.9}
+        onLongPress={onLongPress}
+      >
 
         {/* Reply preview */}
         {message.replyTo && (
@@ -149,7 +153,7 @@ export default function MessageBubble({ message, isMe }) {
           <Text style={styles.time}>{moment(createdAt).format('HH:mm')}</Text>
           {statusIcon()}
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }

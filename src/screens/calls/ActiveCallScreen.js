@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, Image, Alert, Platform
+  View, Text, TouchableOpacity, StyleSheet, Image, Alert, Platform, NativeModules
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,13 +15,18 @@ let mediaDevices = null;
 let webRTCAvailable = false;
 
 try {
-  const WebRTC = require('react-native-webrtc');
-  RTCView = WebRTC.RTCView;
-  RTCPeerConnection = WebRTC.RTCPeerConnection;
-  RTCSessionDescription = WebRTC.RTCSessionDescription;
-  mediaDevices = WebRTC.mediaDevices;
-  webRTCAvailable = true;
-  console.log('✅ WebRTC available');
+  // Check if native module is compiled into the APK
+  if (NativeModules.WebRTCModule) {
+    const WebRTC = require('react-native-webrtc');
+    RTCView = WebRTC.RTCView;
+    RTCPeerConnection = WebRTC.RTCPeerConnection;
+    RTCSessionDescription = WebRTC.RTCSessionDescription;
+    mediaDevices = WebRTC.mediaDevices;
+    webRTCAvailable = true;
+    console.log('✅ WebRTC native module is available');
+  } else {
+    console.log('⚠️ react-native-webrtc native module is NOT compiled in this APK build — using Socket.IO only mode');
+  }
 } catch (e) {
   console.log('⚠️ react-native-webrtc not available — using Socket.IO only mode');
 }
@@ -61,18 +66,24 @@ export default function ActiveCallScreen({ route, navigation }) {
   // Jab call answer ho (outgoing call ke liye)
   const { callStatus: reduxCallStatus, activeCall } = useSelector(s => s.call);
   useEffect(() => {
-    if (reduxCallStatus === 'ongoing' && activeCall?.answer && peerConnection.current && webRTCAvailable) {
-      try {
-        const answer = JSON.parse(activeCall.answer);
-        peerConnection.current
-          .setRemoteDescription(new RTCSessionDescription(answer))
-          .then(() => {
-            setCallStatus('Connected');
-            startTimer();
-          })
-          .catch(err => console.log('setRemoteDescription error:', err));
-      } catch (e) {
-        console.log('Answer parse error:', e);
+    if (reduxCallStatus === 'ongoing') {
+      if (webRTCAvailable && activeCall?.answer && peerConnection.current) {
+        try {
+          const answer = JSON.parse(activeCall.answer);
+          peerConnection.current
+            .setRemoteDescription(new RTCSessionDescription(answer))
+            .then(() => {
+              setCallStatus('Connected');
+              startTimer();
+            })
+            .catch(err => console.log('setRemoteDescription error:', err));
+        } catch (e) {
+          console.log('Answer parse error:', e);
+        }
+      } else if (!webRTCAvailable) {
+        // Socket-only mode: Transition directly to Connected
+        setCallStatus('Connected');
+        startTimer();
       }
     }
   }, [reduxCallStatus, activeCall]);

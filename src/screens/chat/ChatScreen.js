@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
-import { fetchMessages, sendMessage as sendMsg } from '../../store/slices/chatSlice';
+import { fetchMessages, sendMessage as sendMsg, deleteMessage } from '../../store/slices/chatSlice';
 import { socketSend } from '../../services/socketService';
 import { mediaAPI } from '../../services/api';
 import MessageBubble from '../../components/chat/MessageBubble';
@@ -79,6 +79,45 @@ export default function ChatScreen({ route, navigation }) {
       duration: 200,
       useNativeDriver: true,
     }).start(() => setAttachMenuVisible(false));
+  };
+
+  const handleMessageLongPress = (message) => {
+    if (message.isDeletedForEveryone) return;
+
+    const messageId = message._id || message.id;
+    const isMyMsg =
+      message.senderId === user?._id ||
+      message.senderId === user?.id ||
+      message.senderId?._id === user?._id ||
+      message.senderId?._id === user?.id;
+
+    Alert.alert(
+      'Delete Message',
+      isMyMsg
+        ? 'Kya aap is message ko sabhi ke liye delete karna chahte hain?'
+        : 'Kya aap is message ko apne liye delete karna chahte hain?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await dispatch(deleteMessage({
+                messageId,
+                chatId,
+                deleteForEveryone: isMyMsg,
+              })).unwrap();
+
+              // Socket event emit karo real-time update ke liye
+              socketSend.deleteMessage(chatId, otherId, messageId);
+            } catch (err) {
+              Alert.alert('Error', 'Message delete nahi ho saka');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleTyping = (value) => {
@@ -230,7 +269,11 @@ export default function ChatScreen({ route, navigation }) {
             </Text>
           </View>
         )}
-        <MessageBubble message={item} isMe={isMe} />
+        <MessageBubble
+          message={item}
+          isMe={isMe}
+          onLongPress={() => handleMessageLongPress(item)}
+        />
       </>
     );
   };

@@ -19,6 +19,12 @@ export const sendMessage = createAsyncThunk('chats/sendMessage', async (data) =>
   return res.data.message;
 });
 
+// Message delete karo
+export const deleteMessage = createAsyncThunk('chats/deleteMessage', async ({ messageId, chatId, deleteForEveryone }) => {
+  await messageAPI.deleteMessage(messageId, deleteForEveryone);
+  return { messageId, chatId };
+});
+
 const chatSlice = createSlice({
   name: 'chats',
   initialState: {
@@ -68,6 +74,16 @@ const chatSlice = createSlice({
       const exists = state.chats.find(c => c._id === action.payload._id);
       if (!exists) state.chats.unshift(action.payload);
     },
+    deleteMessageLocally: (state, action) => {
+      const { chatId, messageId } = action.payload;
+      if (state.messages[chatId]) {
+        state.messages[chatId] = state.messages[chatId].map(m =>
+          (m._id === messageId || m.id === messageId)
+            ? { ...m, isDeletedForEveryone: 1, text: '🚫 Message delete ho gaya', mediaUrl: null, type: 'text' }
+            : m
+        );
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -83,11 +99,21 @@ const chatSlice = createSlice({
         const chatId = message.chatId;
         if (!state.messages[chatId]) state.messages[chatId] = [];
         state.messages[chatId].push(message);
+      })
+      .addCase(deleteMessage.fulfilled, (state, action) => {
+        const { messageId, chatId } = action.payload;
+        if (state.messages[chatId]) {
+          state.messages[chatId] = state.messages[chatId].map(m =>
+            (m._id === messageId || m.id === messageId)
+              ? { ...m, isDeletedForEveryone: 1, text: '🚫 Message delete ho gaya', mediaUrl: null, type: 'text' }
+              : m
+          );
+        }
       });
   },
 });
 
 export const {
-  receiveMessage, updateMessageStatus, setTyping, setCurrentChat, addChat
+  receiveMessage, updateMessageStatus, setTyping, setCurrentChat, addChat, deleteMessageLocally
 } = chatSlice.actions;
 export default chatSlice.reducer;
