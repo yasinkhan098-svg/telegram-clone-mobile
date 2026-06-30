@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider, useSelector } from 'react-redux';
-import { StatusBar } from 'react-native';
+import { StatusBar, AppState } from 'react-native';
 import store from './src/store/store';
 import RootNavigator from './src/navigation/RootNavigator';
 import { initSocket } from './src/services/socketService';
-import { getToken } from './src/utils/storage';
+import { getToken, getUser } from './src/utils/storage';
+import { loginSuccess, setLocked } from './src/store/slices/authSlice';
 
 // Incoming call watcher — Redux state se call detect karo aur navigate karo
 function IncomingCallWatcher({ navigationRef }) {
@@ -41,12 +42,35 @@ function AppContent() {
   const navigationRef = useRef(null);
 
   useEffect(() => {
-    // App start hote hi socket connect karo agar token hai
+    // App start hote hi token and user load karo, aur locked status active karo
     const initApp = async () => {
       const token = await getToken();
-      if (token) initSocket(token);
+      const user = await getUser();
+      if (token && user) {
+        store.dispatch(loginSuccess({ token, user }));
+        store.dispatch(setLocked(true)); // Reopen pe app locked rahegi (only password prompt)
+        initSocket(token);
+      }
     };
     initApp();
+  }, []);
+
+  // Monitor AppState (minimize/close detection)
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState) => {
+      const state = store.getState();
+      const token = state.auth.token;
+      if (token && (nextAppState === 'background' || nextAppState === 'inactive')) {
+        // App minimize ya close state mein background par jane par lock set karein
+        store.dispatch(setLocked(true));
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   return (

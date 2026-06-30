@@ -7,6 +7,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { logout } from '../../store/slices/authSlice';
 import { authAPI } from '../../services/api';
 import { disconnectSocket } from '../../services/socketService';
+import { clearAll } from '../../utils/storage';
 
 export default function ProfileScreen({ navigation }) {
   const { user } = useSelector(state => state.auth);
@@ -18,7 +19,10 @@ export default function ProfileScreen({ navigation }) {
       {
         text: 'Logout', style: 'destructive',
         onPress: async () => {
-          await authAPI.logout();
+          try {
+            await authAPI.logout();
+          } catch (e) {}
+          await clearAll();
           disconnectSocket();
           dispatch(logout());
         }

@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/slices/authSlice';
 import { authAPI } from '../../services/api';
-import { saveToken } from '../../utils/storage';
+import { saveToken, saveUser } from '../../utils/storage';
 import { initSocket } from '../../services/socketService';
 
 export default function RegisterScreen({ navigation }) {
@@ -36,6 +36,7 @@ export default function RegisterScreen({ navigation }) {
     try {
       const res = await authAPI.register(name.trim(), username.trim(), password);
       await saveToken(res.data.token);
+      await saveUser(res.data.user);
       initSocket(res.data.token);
       dispatch(loginSuccess({ token: res.data.token, user: res.data.user }));
     } catch (error) {
