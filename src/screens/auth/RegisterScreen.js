@@ -25,9 +25,6 @@ export default function RegisterScreen({ navigation }) {
     if (password !== confirmPassword) {
       return Alert.alert('Error', 'Password match nahi kar raha');
     }
-    if (password.length < 6) {
-      return Alert.alert('Error', 'Password kam se kam 6 characters ka hona chahiye');
-    }
     if (username.length < 3) {
       return Alert.alert('Error', 'Username kam se kam 3 characters ka hona chahiye');
     }
@@ -85,7 +82,7 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.label}>Password</Text>
           <TextInput
             style={styles.input}
-            placeholder="kam se kam 6 characters"
+            placeholder="apna password daalein"
             placeholderTextColor="#556170"
             value={password}
             onChangeText={setPassword}
