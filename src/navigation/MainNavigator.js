@@ -11,6 +11,7 @@ import IncomingCallScreen from '../screens/calls/IncomingCallScreen';
 import ActiveCallScreen from '../screens/calls/ActiveCallScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
+import ChangePasswordScreen from '../screens/profile/ChangePasswordScreen';
 import GroupCreateScreen from '../screens/groups/GroupCreateScreen';
 import GroupInfoScreen from '../screens/groups/GroupInfoScreen';
 import UserProfileScreen from '../screens/profile/UserProfileScreen';
@@ -63,6 +64,7 @@ function ProfileStack() {
       }}>
       <Stack.Screen name="MyProfile" component={ProfileScreen} options={{ title: 'My Profile' }} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Edit Profile' }} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ title: 'Change Password' }} />
     </Stack.Navigator>
   );
 }

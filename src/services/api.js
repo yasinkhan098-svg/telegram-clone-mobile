@@ -24,6 +24,9 @@ export const authAPI = {
   updateProfile: (data) => api.put('/api/auth/profile', data),
 
   logout: () => api.post('/api/auth/logout'),
+
+  changePassword: (currentPassword, newPassword) =>
+    api.put('/api/auth/change-password', { currentPassword, newPassword }),
 };
 
 // ─── USERS ──────────────────────────────────────────────

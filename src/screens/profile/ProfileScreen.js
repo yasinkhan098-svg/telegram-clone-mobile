@@ -72,6 +72,14 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.editText}>Profile Edit Karein</Text>
       </TouchableOpacity>
 
+      {/* Change Password Button */}
+      <TouchableOpacity
+        style={styles.changePasswordBtn}
+        onPress={() => navigation.navigate('ChangePassword')}>
+        <Icon name="lock" size={20} color="#fff" />
+        <Text style={styles.changePasswordText}>Password Badlein</Text>
+      </TouchableOpacity>
+
       {/* Logout */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Icon name="logout" size={20} color="#ff5252" />
@@ -102,6 +110,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#00bfa5', margin: 16, padding: 14, borderRadius: 12,
   },
   editText: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
+  changePasswordBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#2a3942', margin: 16, marginTop: 0, padding: 14, borderRadius: 12,
+  },
+  changePasswordText: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#1c2733', margin: 16, marginTop: 0, padding: 14, borderRadius: 12,
